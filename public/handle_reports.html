@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handle Reports - AltherPride</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="images/alther.png" alt="AltherPride Logo">
+      <span>AltherPride</span>
+    </div>
+    <div class="user-nav">
+      <div class="user-info-container">
+        <img id="userPhoto" class="nav-user-photo" src="/images/default-avatar.png" alt="User Photo">
+        <div id="userInfo" class="user-info"></div>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-toggle" onclick="toggleNavDropdown()">☰</button>
+        <div class="nav-dropdown hidden" id="navDropdown">
+          <a href="#" class="nav-link" onclick="showMainPage()">Home Page</a>
+          <a href="#" class="nav-link" onclick="viewProfile()">My Profile</a>
+          <a href="#" class="nav-link" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reports-container">
+    <h1>Reports to Handle</h1>
+    <div id="reportsList"></div>
+  </div>
+
+  <button onclick="window.location.href='reports.html'" class="back-button" style="position: fixed; bottom: 20px; left: 20px; background: #444;">Back</button>
+
+  <script src="/shared.js"></script>
+  <script>
+    async function loadReports() {
+      try {
+        const response = await fetch('/api/topics');
+        const reports = await response.json();
+
+        const reportsList = document.getElementById('reportsList');
+        reportsList.innerHTML = reports
+          .filter(report => report.status === 'handle')
+          .map(report => `
+            <div class="report-card" onclick="window.location.href='report_details.html?id=${report.id}'">
+              <div class="report-info">
+                <h3 class="report-title">${report.title}</h3>
+                <div class="report-meta">
+                  Reported by ${formatUsername(report.author, report.authorRank || 'Verified')} • ${new Date(report.createdAt).toLocaleString()}
+                </div>
+                <div class="evidence-section">
+                  ${report.evidence ? `<img src="${report.evidence}" alt="Evidence" class="evidence-image">` : ''}
+                </div>
+              </div>
+              <div class="report-status">
+                <span class="status-badge in-process">In Process</span>
+              </div>
+            </div>
+          `).join('');
+      } catch (error) {
+        console.error('Error loading reports:', error);
+      }
+    }
+
+    function toggleNavDropdown() {
+      const dropdown = document.getElementById('navDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadReports);
+  </script>
+  <style>
+.report-card {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  border: 1px solid #333;
+  transition: all 0.2s ease;
+  display: flex; /* Added for flexbox layout */
+  justify-content: space-between; /* Distributes space between elements */
+}
+
+.report-card:hover {
+  background: #252525;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.report-title {
+  color: #ff3e3e;
+  margin: 0;
+  font-size: 18px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.report-meta {
+  color: #888;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-info { /*Added to group report info elements*/
+}
+
+.report-status { /*Added to hold status badge*/
+  text-align: right; /* Aligns badge to the right */
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #333;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.in-process {
+  background: #e74c4c;
+}
+
+.reports-container h1 {
+  color: white;
+  font-size: 24px;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+.evidence-section {
+  margin-top: 10px;
+}
+
+.evidence-image {
+  max-width: 100%;
+  max-height: 200px;
+}
+  </style>
+</body>
+</html>

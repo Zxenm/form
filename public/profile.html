@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - AltherPride SAMP</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <link rel="stylesheet" href="animations.css">
+  <div class="navbar">
+    <div class="logo">
+      <img src="images/alther.png" alt="AltherPride Logo">
+      <span>AltherPride</span>
+    </div>
+    <div class="user-nav">
+      <div class="user-info-container">
+        <img id="userPhoto" class="nav-user-photo" src="/images/default-avatar.png" alt="User Photo">
+        <div id="userInfo" class="user-info"></div>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-toggle" onclick="toggleNavDropdown()">☰</button>
+        <div class="nav-dropdown hidden" id="navDropdown">
+          <a href="#" class="nav-link" onclick="showMainPage()">Home Page</a>
+          <a href="#" class="nav-link" onclick="viewProfile()">My Profile</a>
+          <a href="#" class="nav-link" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="forumSection">
+    <div class="profile-info">
+      <div class="profile-banner">
+        <img src="/images/original_banner.jpg" alt="Profile Banner">
+      </div>
+      <div class="profile-photo">
+        <img id="profilePhoto" src="/images/default-avatar.png" alt="Profile Photo">
+        <div class="photo-upload">
+          <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="uploadProfilePhoto()">
+          <div id="photoControls">
+            <button onclick="togglePhotoButtons()">Change Profile Picture</button>
+            <div id="photoButtons" style="display: none; margin-top: 10px;">
+              <div style="display: flex; gap: 10px; align-items: center; justify-content: center;">
+                <button onclick="document.getElementById('photoInput').click()">Upload Image</button>
+                <button onclick="setDefaultPhoto()">Set to Default</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="profile-status">
+        <div class="status-indicator">
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-text" id="status-text">Online</span>
+        </div>
+      </div>
+      <div class="profile-level">
+        <div class="level-info">
+          <span class="level-badge" id="level-badge">Level 1</span>
+          <span class="xp-text" id="xp-text">0 XP</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="xp-progress"></div>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-item">
+          <span class="profile-label">Username</span>
+          <div class="profile-value-container">
+            <span class="profile-value" id="username-display"></span>
+          </div>
+        </div>
+        <div class="profile-item">
+          <span class="profile-label">WhatsApp Number</span>
+          <span class="profile-value" id="whatsapp-display"></span>
+        </div>
+        <div class="profile-item">
+          <span class="profile-label">Rank</span>
+          <span class="profile-value" id="rank-display"></span>
+        </div>
+        <div class="profile-item">
+          <span class="profile-label">Registered On</span>
+          <span class="profile-value" id="registered-display"></span>
+        </div>
+        <div class="profile-item">
+          <span class="profile-label">Last Active</span>
+          <span class="profile-value" id="lastactive-display"></span>
+        </div>
+      </div>
+    </div>
+    <div id="adminPanel"></div>
+  </div>
+
+  <button onclick="window.location.href='/'" class="back-button" style="position: fixed; bottom: 20px; left: 20px; background: #444;">Back</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared.js"></script>
+  <script>
+    let socket;
+
+    async function loadProfileData() {
+      try {
+        const response = await fetch('/profile');
+        const userData = await response.json();
+
+        document.getElementById('profilePhoto').src = userData.photoUrl || '/images/default-avatar.png';
+        document.getElementById('username-display').innerHTML = formatUsername(userData.username, userData.rank || 'Verified');
+        document.getElementById('whatsapp-display').textContent = userData.whatsapp;
+        document.getElementById('rank-display').textContent = userData.rank || 'Verified';
+        document.getElementById('registered-display').textContent = new Date(userData.joinDate).toLocaleString();
+        
+        // Last active status
+        const lastActive = userData.lastActive || Date.now();
+        const isOnline = isUserOnline(lastActive);
+        document.getElementById('lastactive-display').textContent = isOnline ? 'Online now' : getTimeAgo(lastActive);
+        
+        // Update online status indicator
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        if (isOnline) {
+          statusDot.classList.remove('offline');
+          statusText.textContent = 'Online';
+        } else {
+          statusDot.classList.add('offline');
+          statusText.textContent = 'Offline';
+        }
+        
+        // Update level and XP
+        const exp = userData.experiencePoints || 0;
+        const level = calculateLevel(exp);
+        const nextLevelXP = calculateExperienceForLevel(level + 1);
+        const currentLevelXP = calculateExperienceForLevel(level);
+        const progress = calculateProgressToNextLevel(exp);
+        
+        document.getElementById('level-badge').textContent = `Level ${level}`;
+        document.getElementById('xp-text').textContent = `${exp} XP / ${nextLevelXP} XP to level ${level + 1}`;
+        document.getElementById('xp-progress').style.width = `${progress}%`;
+
+        if (userData.role === 'admin') {
+          displayAdminPanel();
+        }
+        
+        // Set up interval to check status
+        setInterval(() => {
+          const lastActive = userData.lastActive || Date.now();
+          const isOnline = isUserOnline(lastActive);
+          if (isOnline) {
+            statusDot.classList.remove('offline');
+            statusText.textContent = 'Online';
+          } else {
+            statusDot.classList.add('offline');
+            statusText.textContent = 'Offline';
+          }
+        }, 60000); // Check every minute
+        
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    }
+
+    function toggleEditField(field) {
+      const displayElement = document.getElementById(`${field}-display`);
+      const editElement = document.getElementById(`${field}-edit`);
+      editElement.classList.toggle('hidden');
+    }
+
+    async function saveProfileField(field) {
+      const editElement = document.getElementById(`${field}-edit`);
+      const inputs = editElement.querySelectorAll('input');
+      let data = {};
+
+      if (field === 'username') {
+        data = { username: inputs[0].value };
+      } else if (field === 'password') {
+        const [current, newPass, confirm] = inputs;
+        if (newPass.value !== confirm.value) {
+          alert('New passwords do not match');
+          return;
+        }
+        data = {
+          currentPassword: current.value,
+          newPassword: newPass.value
+        };
+      }
+
+      try {
+        const response = await fetch(`/api/profile/${field}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          loadProfileData();
+          toggleEditField(field);
+          alert('Profile updated successfully');
+        } else {
+          alert(result.message || 'Failed to update profile');
+        }
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        alert('Failed to update profile');
+      }
+    }
+
+    function togglePhotoButtons() {
+      const buttons = document.getElementById('photoButtons');
+      buttons.style.display = buttons.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function setDefaultPhoto() {
+      try {
+        const response = await fetch('/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ setDefault: true })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          document.getElementById('profilePhoto').src = '/images/default-avatar.png' + '?t=' + Date.now();
+          togglePhotoButtons();
+        }
+      } catch (error) {
+        console.error('Error setting default photo:', error);
+        alert('Error setting default photo');
+      }
+    }
+
+    async function uploadProfilePhoto() {
+      const input = document.getElementById('photoInput');
+      const file = input.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      try {
+        const response = await fetch('/upload-photo', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          document.getElementById('profilePhoto').src = data.photoUrl + '?t=' + Date.now();
+          togglePhotoButtons();
+        } else {
+          alert('Failed to upload photo: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        alert('Error uploading photo');
+      }
+    }
+
+    async function displayAdminPanel() {
+      const [usersResponse, ranksResponse] = await Promise.all([
+        fetch('/admin/users'),
+        fetch('/admin/ranks')
+      ]);
+
+      const users = await usersResponse.json();
+      const ranksData = await ranksResponse.json();
+
+      const adminHTML = `
+        <div class="admin-panel">
+          <h3>Admin Panel</h3>
+          <div class="user-list">
+            ${Object.entries(users).map(([whatsapp, user]) => `
+              <div class="user-item">
+                <span>${user.username} (${user.rank || 'Verified'})</span>
+                <div>
+                  <button onclick="showRankSelector('${whatsapp}', '${user.rank || 'Verified'}')">Change Rank</button>
+                  <button onclick="deleteUser('${whatsapp}')" class="delete-btn">Delete</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div id="rankPopup" class="popup" style="display: none;">
+          <div class="popup-content">
+            <h3>Select Rank</h3>
+            <select id="rankSelect" class="form-input">
+              ${ranksData.ranks.map(rank => `
+                <option value="${rank.name}">${rank.name}</option>
+              `).join('')}
+            </select>
+            <div class="form-buttons" style="margin-top: 15px;">
+              <button onclick="confirmRankChange()">Save</button>
+              <button onclick="hideRankPopup()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('adminPanel').innerHTML = adminHTML;
+    }
+
+    let selectedWhatsapp = null;
+
+    function showRankSelector(whatsapp, currentRank) {
+      selectedWhatsapp = whatsapp;
+      const popup = document.getElementById('rankPopup');
+      const select = document.getElementById('rankSelect');
+      select.value = currentRank;
+      popup.style.display = 'flex';
+    }
+
+    function hideRankPopup() {
+      document.getElementById('rankPopup').style.display = 'none';
+      selectedWhatsapp = null;
+    }
+
+    async function confirmRankChange() {
+      if (!selectedWhatsapp) return;
+
+      const newRank = document.getElementById('rankSelect').value;
+      try {
+        const response = await fetch('/admin/change-rank', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            whatsapp: selectedWhatsapp, 
+            rank: newRank 
+          })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          hideRankPopup();
+          location.reload();
+        } else {
+          alert(result.message || 'Failed to change rank');
+        }
+      } catch (error) {
+        console.error('Error changing rank:', error);
+        alert('Failed to change rank');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      socket = io();
+      loadUserInfo();
+      loadProfileData();
+    });
+  </script>
+</body>
+</html>

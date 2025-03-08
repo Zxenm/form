@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Reports - AltherPride SAMP</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .reports-container {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    .reports-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .new-report-btn {
+      background: #e74c4c;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .new-report-btn:hover {
+      background: #d43d3d;
+    }
+
+    .report-popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .report-form {
+      background: #2d2d2d;
+      padding: 30px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .form-title {
+      color: #e74c4c;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: #888;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: white;
+      box-sizing: border-box;
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .cancel-btn {
+      background: #444;
+    }
+
+    .evidence-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type=file] {
+      font-size: 100px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .file-input-btn {
+      background: #444;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .preview-image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .reports-list {
+      display: grid;
+      gap: 15px;
+    }
+
+    .report-card {
+      background: #2d2d2d;
+      border-radius: 0;
+      padding: 8px;
+      display: grid;
+      grid-template-columns: auto 120px;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      margin-bottom: 1px;
+    }
+
+    .report-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .report-info h3 {
+      color: #e74c4c;
+      margin: 0 0 5px 0;
+    }
+
+    .report-meta {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .report-status {
+      text-align: right;
+      align-self: center;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      background: #444;
+      color: white;
+    }
+
+    .thread {
+      display: grid;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .thread h3 {
+      font-size: 1em;
+      margin: 0;
+    }
+
+    .thread p {
+      font-size: 0.9em;
+      margin: 5px 0;
+    }
+
+    .thread-icon {
+      font-size: 1.2em;
+    }
+  </style>
+  </head>
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="images/alther.png" alt="AltherPride Logo">
+      <span>AltherPride</span>
+    </div>
+    <div class="user-nav">
+      <div class="user-info-container">
+        <img id="userPhoto" class="nav-user-photo" src="/images/default-avatar.png" alt="User Photo">
+        <div id="userInfo" class="user-info"></div>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-toggle" onclick="toggleNavDropdown()">☰</button>
+        <div class="nav-dropdown hidden" id="navDropdown">
+          <a href="#" class="nav-link" onclick="showMainPage()">Home Page</a>
+          <a href="#" class="nav-link" onclick="viewProfile()">My Profile</a>
+          <a href="#" class="nav-link" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reports-container">
+    <div class="forum-category">
+      <h2>Subforum</h2>
+      <div class="forum-threads">
+        <div class="thread" onclick="window.location.href='handle_reports.html'">
+          <div class="thread-icon">📋</div>
+          <div class="thread-content">
+            <h3>Handle Reports</h3>
+            <p>Handle and process player reports</p>
+          </div>
+          <div class="thread-stats">
+            <div class="post-count" id="handleCount">0</div>
+            <div>posts</div>
+          </div>
+        </div>
+        <div class="thread" onclick="window.location.href='archived_reports.html'">
+          <div class="thread-icon">📁</div>
+          <div class="thread-content">
+            <h3>Archived Report</h3>
+            <p>View completed and archived reports</p>
+          </div>
+          <div class="thread-stats">
+            <div class="post-count" id="archivedCount">0</div>
+            <div>posts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reports-header">
+      <h1>Player Reports</h1>
+      <button class="new-report-btn" onclick="showReportForm()">Create New Report</button>
+    </div>
+
+    <div class="reports-list" id="reportsList">
+      <!-- Reports will be loaded here -->
+    </div>
+  </div>
+
+  <div class="report-popup" id="reportPopup">
+    <div class="report-form">
+      <h2 class="form-title">PLAYER REPORT</h2>
+      <form id="reportForm" onsubmit="submitReport(event)">
+        <div class="form-group">
+          <label class="form-label">Reporter:</label>
+          <input type="text" class="form-input" id="reporter" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reported Player:</label>
+          <input type="text" class="form-input" id="reportedPlayer" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date of Incident:</label>
+          <input type="datetime-local" class="form-input" id="incidentDate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Violated Rules:</label>
+          <textarea class="form-input form-textarea" id="violatedRules" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chronology:</label>
+          <textarea class="form-input form-textarea" id="chronology" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Evidence:</label>
+          <div class="evidence-upload">
+            <div class="file-input-wrapper">
+              <button type="button" class="file-input-btn">Choose Files</button>
+              <input type="file" multiple accept="image/*" id="evidence" onchange="previewImages(event)">
+            </div>
+            <div class="preview-container" id="previewContainer"></div>
+          </div>
+        </div>
+        <div class="form-buttons">
+          <button type="button" class="cancel-btn" onclick="hideReportForm()">Cancel</button>
+          <button type="submit" class="new-report-btn">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <button onclick="window.location.href='/'" class="back-button" style="position: fixed; bottom: 20px; left: 20px; background: #444;">Back</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared.js"></script>
+  <script>
+    let socket;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      socket = io();
+      loadUserInfo();
+    });
+
+    function showReportForm() {
+      document.getElementById('reportPopup').style.display = 'flex';
+    }
+
+    function hideReportForm() {
+      document.getElementById('reportPopup').style.display = 'none';
+      document.getElementById('reportForm').reset();
+      document.getElementById('previewContainer').innerHTML = '';
+    }
+
+    function previewImages(event) {
+      const container = document.getElementById('previewContainer');
+      container.innerHTML = '';
+      const files = event.target.files;
+
+      for (let file of files) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'preview-image';
+          container.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function loadReports() {
+      try {
+        const response = await fetch('/api/topics');
+        const reports = await response.json();
+        
+        // Update counts
+        const handleCount = reports.filter(r => r.status === 'handle').length;
+        const archivedCount = reports.filter(r => r.status === 'archived').length;
+        
+        document.getElementById('handleCount').textContent = handleCount;
+        document.getElementById('archivedCount').textContent = archivedCount;
+
+        const reportsList = document.getElementById('reportsList');
+        reportsList.innerHTML = reports
+          .filter(report => !report.status || report.status === 'pending')
+          .map(report => `
+          <div class="report-card" onclick="window.location.href='report_details.html?id=${report.id}'">
+            <div class="report-info">
+              <h3>${report.title}</h3>
+              <div class="report-meta">
+                Reported by ${formatUsername(report.author, report.rank || 'Verified')} • ${new Date(report.createdAt).toLocaleString()}
+              </div>
+            </div>
+            <div class="report-status">
+              <span class="status-badge">Pending</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading reports:', error);
+        document.getElementById('reportsList').innerHTML = `
+          <div style="color: red; padding: 20px;">
+            Error loading reports. Please try refreshing the page.
+            Error details: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    async function submitReport(event) {
+      event.preventDefault();
+      const formData = new FormData();
+      const evidence = document.getElementById('evidence').files;
+
+      for (let file of evidence) {
+        formData.append('evidence[]', file);
+      }
+
+      // First upload all images
+      const uploadedUrls = [];
+      for (let file of evidence) {
+        const formData = new FormData();
+        formData.append('image', file);
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await uploadResponse.json();
+        if (result.success) {
+          uploadedUrls.push(result.url);
+        }
+      }
+
+      const reportData = {
+        title: `[REPORT] ${document.getElementById('reportedPlayer').value}`,
+        description: `Basic Information:
+Reporter: ${document.getElementById('reporter').value}
+Reported Player: ${document.getElementById('reportedPlayer').value}
+Date of Incident: ${document.getElementById('incidentDate').value}
+
+Violated Rules:
+${document.getElementById('violatedRules').value}
+
+Chronology:
+${document.getElementById('chronology').value}
+
+Evidence:
+${uploadedUrls.map(url => `[Image](${url})`).join('\n')}`
+      };
+
+      try {
+        const response = await fetch('/api/topics', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(reportData)
+        });
+
+        if (response.ok) {
+          hideReportForm();
+          window.location.href = 'reports.html';
+        } else {
+          alert('Failed to submit report');
+        }
+      } catch (error) {
+        console.error('Error submitting report:', error);
+        alert('Error submitting report');
+      }
+    }
+
+    function toggleNavDropdown() {
+      const dropdown = document.getElementById('navDropdown');
+      dropdown.style.display = dropdown.style.display === 'none' || dropdown.classList.contains('hidden') ? 'flex' : 'none';
+      dropdown.classList.toggle('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadReports);
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AltherPride - Community Rules</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">AltherPride</div>
+    <div class="user-nav">
+      <div class="nav-menu">
+        <button class="nav-toggle" onclick="toggleNavDropdown()">☰</button>
+        <div class="nav-dropdown hidden" id="navDropdown">
+          <a href="#" class="nav-link" onclick="window.location.href='/'">Home Page</a>
+          <a href="#" class="nav-link" onclick="window.location.href='/profile'">My Profile</a>
+          <a href="#" class="nav-link" onclick="window.location.href='/logout'">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="forum-category">
+      <h2>Community & Server Rules</h2>
+      <div class="forum-threads">
+        <div class="thread">
+          <div class="thread-icon">📋</div>
+          <div class="thread-content" onclick="openNewWindow('In-Game Rules', 'ingame_rules.html')">
+            <h3>In-Game Rules</h3>
+            <p>Basic rules for gameplay and player conduct within the server.</p>
+          </div>
+        </div>
+        <div class="thread">
+          <div class="thread-icon">🏠</div>
+          <div class="thread-content">
+            <h3>Property Rules</h3>
+            <p>Guidelines for managing and respecting player properties.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button onclick="window.close()" class="back-button" style="position: fixed; bottom: 20px; left: 20px; background: #444;">Back</button>
+  </div>
+  <script src="/script.js"></script>
+</body>
+</html>

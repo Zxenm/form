@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - AltherPride SAMP</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="animations.css">
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="images/alther.png" alt="AltherPride Logo">
+      <span>AltherPride</span>
+    </div>
+    <div class="user-nav">
+      <div class="user-info-container">
+        <img id="userPhoto" class="nav-user-photo" src="/images/default-avatar.png" alt="User Photo">
+        <div id="userInfo" class="user-info"></div>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-toggle" onclick="toggleNavDropdown()">☰</button>
+        <div class="nav-dropdown hidden" id="navDropdown">
+          <a href="#" class="nav-link" onclick="showMainPage()">Home Page</a>
+          <a href="#" class="nav-link" onclick="viewProfile()">My Profile</a>
+          <a href="#" class="nav-link" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="profileSection" class="profile-section">
+    <div class="profile-info">
+      <div class="profile-banner">
+        <img id="userBanner" src="/images/original_banner.jpg" alt="Profile Banner">
+      </div>
+      <div class="profile-photo">
+        <img id="profilePhoto" src="/images/default-avatar.png" alt="Profile Photo">
+      </div>
+      <div class="profile-status">
+        <div class="status-indicator">
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-text" id="status-text">Offline</span>
+        </div>
+      </div>
+      <div class="profile-level">
+        <div class="level-info">
+          <span class="level-badge" id="level-badge">Level 1</span>
+          <span class="xp-text" id="xp-text">0 XP</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="xp-progress"></div>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-item">
+          <span class="profile-label">Username</span>
+          <span class="profile-value" id="username-display"></span>
+        </div>
+        <div class="profile-item">
+          <span class="profile-label">Rank</span>
+          <span class="profile-value" id="rank-display"></span>
+        </div>
+        <div class="profile-item">
+          <span class="profile-label">Registered On</span>
+          <span class="profile-value" id="registered-display"></span>
+        </div>
+        <div class="profile-item">
+          <span class="profile-label">Last Active</span>
+          <span class="profile-value" id="lastactive-display"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button onclick="window.location.href='/'" class="back-button" style="position: fixed; bottom: 20px; left: 20px; background: #444;">Back</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared.js"></script>
+  <script>
+    let socket;
+    let whatsapp;
+
+    async function loadUserProfile() {
+      try {
+        whatsapp = window.location.pathname.split('/').pop();
+        const response = await fetch(`/api/user/${whatsapp}`);
+        
+        if (!response.ok) {
+          document.getElementById('profileSection').innerHTML = '<div class="error-message">User not found</div>';
+          return;
+        }
+        
+        const data = await response.json();
+        if (!data.success) {
+          document.getElementById('profileSection').innerHTML = '<div class="error-message">User not found</div>';
+          return;
+        }
+        
+        const userData = data.user;
+        document.title = `${userData.username}'s Profile - AltherPride SAMP`;
+        
+        document.getElementById('profilePhoto').src = userData.photoUrl || '/images/default-avatar.png';
+        document.getElementById('userBanner').src = userData.bannerUrl || '/images/original_banner.jpg';
+        document.getElementById('username-display').innerHTML = formatUsername(userData.username, userData.rank || 'Verified');
+        document.getElementById('rank-display').textContent = userData.rank || 'Verified';
+        document.getElementById('registered-display').textContent = new Date(userData.joinDate).toLocaleString();
+        
+        // Set up level info
+        const exp = userData.experiencePoints || 0;
+        const level = calculateLevel(exp);
+        const nextLevelXP = calculateExperienceForLevel(level + 1);
+        const currentLevelXP = calculateExperienceForLevel(level);
+        const progress = calculateProgressToNextLevel(exp);
+        
+        document.getElementById('level-badge').textContent = `Level ${level}`;
+        document.getElementById('xp-text').textContent = `${exp} XP / ${nextLevelXP} XP`;
+        document.getElementById('xp-progress').style.width = `${progress}%`;
+        
+        // Set online status
+        const lastActive = userData.lastActive || 0;
+        const isOnline = userData.isOnline;
+        document.getElementById('lastactive-display').textContent = isOnline ? 'Online now' : getTimeAgo(lastActive);
+        
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        if (isOnline) {
+          statusDot.classList.remove('offline');
+          statusText.textContent = 'Online';
+        } else {
+          statusDot.classList.add('offline');
+          statusText.textContent = 'Offline';
+        }
+        
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+        document.getElementById('profileSection').innerHTML = '<div class="error-message">Error loading profile</div>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      socket = io();
+      loadUserInfo();
+      loadUserProfile();
+      
+      // Setup refresh interval for online status
+      setInterval(async () => {
+        try {
+          const response = await fetch(`/api/user/${whatsapp}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              const userData = data.user;
+              const statusDot = document.getElementById('status-dot');
+              const statusText = document.getElementById('status-text');
+              
+              if (userData.isOnline) {
+                statusDot.classList.remove('offline');
+                statusText.textContent = 'Online';
+                document.getElementById('lastactive-display').textContent = 'Online now';
+              } else {
+                statusDot.classList.add('offline');
+                statusText.textContent = 'Offline';
+                document.getElementById('lastactive-display').textContent = getTimeAgo(userData.lastActive);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error refreshing online status:', error);
+        }
+      }, 60000); // Check every minute
+    });
+  </script>
+</body>
+</html>

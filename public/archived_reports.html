@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archived Reports - AltherPride SAMP</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .reports-container {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .report-card {
+      background: #2d2d2d;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      padding: 15px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .report-card:hover {
+      background: #333;
+    }
+    .report-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .report-info h3 {
+      margin: 0;
+      color: #e74c4c;
+      font-size: 16px;
+    }
+    .report-meta {
+      color: #888;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .report-status {
+      margin-left: 15px;
+    }
+    .status-badge {
+      background: #444;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="images/alther.png" alt="AltherPride Logo">
+      <span>AltherPride</span>
+    </div>
+    <div class="user-nav">
+      <div class="user-info-container">
+        <img id="userPhoto" class="nav-user-photo" src="/images/default-avatar.png" alt="User Photo">
+        <div id="userInfo" class="user-info"></div>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-toggle" onclick="toggleNavDropdown()">☰</button>
+        <div class="nav-dropdown hidden" id="navDropdown">
+          <a href="#" class="nav-link" onclick="showMainPage()">Home Page</a>
+          <a href="#" class="nav-link" onclick="viewProfile()">My Profile</a>
+          <a href="#" class="nav-link" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reports-container">
+    <h1>Archived Reports</h1>
+    <div class="reports-list" id="reportsList">
+      <!-- Reports will be loaded here -->
+    </div>
+  </div>
+
+  <button onclick="window.location.href='reports.html'" class="back-button" style="position: fixed; bottom: 20px; left: 20px; background: #444;">Back</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared.js"></script>
+  <script>
+    function toggleNavDropdown() {
+      const dropdown = document.getElementById('navDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    async function loadReports() {
+      try {
+        const response = await fetch('/api/topics');
+        const reports = await response.json();
+        
+        const reportsList = document.getElementById('reportsList');
+        reportsList.innerHTML = reports
+          .filter(report => report.status === 'archived')
+          .map(report => `
+            <div class="report-card" onclick="window.location.href='report_details.html?id=${report.id}'">
+              <div class="report-info">
+                <div>
+                  <h3>[REPORT] ${report.title.replace('[REPORT] ', '')}</h3>
+                  <div class="report-meta">
+                    Reported by ${formatUsername(report.author, report.authorRank || 'Verified')} • ${new Date(report.createdAt).toLocaleString()}
+                  </div>
+                </div>
+                <div class="report-status">
+                  <span class="status-badge">Archived</span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+      } catch (error) {
+        console.error('Error loading reports:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadReports);
+  </script>
+</body>
+</html>

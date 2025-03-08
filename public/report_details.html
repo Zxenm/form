@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Details - AltherPride SAMP</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .report-details {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #2d2d2d;
+      border-radius: 4px;
+    }
+    .report-title {
+      text-align: center;
+      color: #e74c4c;
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      color: #888;
+      font-size: 0.9em;
+      margin-bottom: 20px;
+    }
+    .basic-info {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .info-table td {
+      padding: 8px;
+      border: 1px solid #333;
+    }
+    .info-table td:first-child {
+      width: 150px;
+      background: #222;
+      color: #888;
+    }
+    .section {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .section img {
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      border-radius: 4px;
+      box-sizing: border-box;
+      display: block;
+      margin: 10px 0;
+      max-height: 500px;
+      width: auto;
+    }
+    .section-title {
+      color: #888;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .section-content {
+      color: #fff;
+      line-height: 1.5;
+    }
+    .evidence-container {
+      position: relative;
+      margin: 10px 0;
+      background: #2a2a2a;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .evidence-content {
+      display: none;
+      white-space: pre-line;
+      background: #1a1a1a;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #fff;
+      font-size: 0.9em;
+      line-height: 1.5;
+      border: 1px solid #333;
+    }
+    .evidence-content.revealed {
+      display: block;
+    }
+    .evidence-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: #2a2a2a;
+      color: #ccc;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .evidence-button::before {
+      content: "👁";
+      font-size: 16px;
+    }
+    .comments-section {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    .comment {
+      background: #2d2d2d;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .comment-header {
+      background: #222;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .author-name {
+      color: #fff;
+    }
+    .author-role {
+      font-size: 0.8em;
+      color: #888;
+    }
+    .comment-date {
+      color: #888;
+      font-size: 0.9em;
+    }
+    .comment-content {
+      padding: 15px;
+      color: #fff;
+    }
+    .reply-form {
+      max-width: 800px;
+      margin: 20px auto;
+      background: #2d2d2d;
+      padding: 20px;
+      border-radius: 4px;
+    }
+    .reply-form textarea {
+      width: calc(100% - 20px);
+      min-height: 100px;
+      max-width: calc(100% - 20px);
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 10px;
+      color: #fff;
+      margin-bottom: 10px;
+      resize: vertical;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      box-sizing: border-box;
+    }
+    .reply-form button {
+      background: #e74c4c;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .quote-content {
+      background: #1a1a1a;
+      padding: 10px;
+      border-left: 3px solid #e74c4c;
+      margin: 10px 0;
+      font-style: italic;
+      color: #888;
+    }
+    .quote-btn {
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px;
+      float: right;
+    }
+    .status-buttons {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .status-buttons button {
+      background: #4CAF50; /* Green */
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 0 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .status-buttons button:nth-child(2){
+      background: #808080; /* Gray */
+    }
+    .status-buttons button:nth-child(3){
+      background: #007bff; /* Blue */
+    }
+    .error-message {
+      color: red;
+      font-weight: bold;
+      text-align: center;
+      padding: 20px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="images/alther.png" alt="AltherPride Logo">
+      <span>AltherPride</span>
+    </div>
+    <div class="user-nav">
+      <div class="user-info-container">
+        <img id="userPhoto" class="nav-user-photo thread-avatar" src="/images/default-avatar.png" alt="User Photo">
+        <div id="userInfo" class="user-info"></div>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-toggle" onclick="toggleNavDropdown()">☰</button>
+        <div class="nav-dropdown hidden" id="navDropdown">
+          <a href="#" class="nav-link" onclick="showMainPage()">Home Page</a>
+          <a href="#" class="nav-link" onclick="viewProfile()">My Profile</a>
+          <a href="#" class="nav-link" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-details" id="reportContent">
+    <!-- Report content will be loaded here -->
+  </div>
+
+  <div class="status-buttons" style="text-align: center; margin: 20px 0; display: none;">
+    <button onclick="changeReportStatus('handle')">Move to Handle</button>
+    <button onclick="changeReportStatus('archived')">Move to Archived</button>
+    <button onclick="toggleLock()" id="lockButton">Lock Topic</button>
+  </div>
+
+  <div class="comments-section" id="commentsSection">
+    <!-- Comments will be loaded here -->
+  </div>
+
+  <div class="reply-form" id="replyForm">
+    <textarea id="replyContent" placeholder="Write your reply..."></textarea>
+    <button onclick="submitReply()">Submit Reply</button>
+  </div>
+  <div id="lockedMessage" style="display: none; text-align: center; padding: 20px; margin: 20px; background-color: #fff3f3; border: 1px solid #e74c4c; border-radius: 5px; color: #e74c4c; font-weight: bold;">
+    This Topic is Locked
+  </div>
+
+  <button onclick="window.location.href='reports.html'" class="back-button" style="position: fixed; bottom: 20px; left: 20px; background: #444;">Back</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared.js"></script>
+  <script>
+    let currentReportId = '';
+    let currentQuoteId = null;
+    let isLocked = false; // Track lock status
+
+    async function checkIsAdmin() {
+      try {
+        const response = await fetch('/profile');
+        const userData = await response.json();
+        return userData.role === 'admin';
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadUserInfo();
+    });
+
+    let currentTopic;
+
+    async function loadReportDetails() {
+      const urlParams = new URLSearchParams(window.location.search);
+      currentReportId = urlParams.get('id');
+
+      try {
+        // First get the topic data
+        const response = await fetch(`/api/topics/${currentReportId}`);
+        currentTopic = await response.json();
+
+        // Then get admin status and author photo
+        const [isAdmin, profileResponse] = await Promise.all([
+          checkIsAdmin(),
+          fetch(`/api/users/${currentTopic.authorWhatsapp || ''}`)
+        ]);
+        
+        // Update photo URL if available
+        const authorData = await profileResponse.json();
+        if (authorData.success) {
+          currentTopic.authorPhotoUrl = authorData.photoUrl;
+        }
+
+        if (isAdmin) {
+          document.querySelector('.status-buttons').style.display = 'block';
+          isLocked = currentTopic.isLocked; // Get initial lock status from report data
+          updateLockButton();
+        }
+
+        if (!currentTopic) {
+          document.getElementById('reportContent').innerHTML = '<div class="error-message">Report not found or failed to load.</div>';
+          return;
+        }
+
+        const reportContent = document.getElementById('reportContent');
+        const [basicInfo, ...sections] = currentTopic.description.split('\n\n');
+
+        const content = `
+          <h1 class="report-title">${currentTopic.title}</h1>
+          <div class="report-header">
+            <div class="author-info">
+              <img class="author-avatar thread-avatar" src="${currentTopic.authorPhotoUrl || '/images/default-avatar.png'}" alt="Author Photo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+              <div>
+                <span>Posted by <span style="color: ${getRankColor(currentTopic.rank || 'Verified')}">${currentTopic.author}</span></span>
+              </div>
+            </div>
+            <span>${new Date(currentTopic.createdAt).toLocaleString()}</span>
+          </div>
+          <div class="basic-info">
+            <table class="info-table">
+              ${basicInfo.split('\n').slice(1).map(line => {
+                const [label, value] = line.split(': ');
+                return `
+                  <tr>
+                    <td>${label}</td>
+                    <td>${value}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </table>
+          </div>
+          ${sections.map(section => {
+            const [title, ...content] = section.split('\n');
+            return `
+              <div class="section">
+                <div class="section-title">${title}</div>
+                <div class="section-content">
+                  ${(() => {
+                    if (title === "Violated Rules") {
+                      return content.join('\n');
+                    }
+                    const images = content.join('\n').match(/\[Image\]\((.*?)\)/g) || [];
+                    if (images.length > 0) {
+                      const imageHtml = images.map(img => {
+                        const url = img.match(/\[Image\]\((.*?)\)/)[1];
+                        return `<img src="${url}" class="evidence-image" onclick="showFullImage(this.src)">`;
+                      }).join('');
+                      return content.join('\n').replace(/\[Image\]\(.*?\)/g, '') + 
+                        `<div class="evidence-container">
+                          <button class="evidence-button" onclick="toggleEvidence(this)">Reveal hidden contents</button>
+                          <div class="evidence-content">${imageHtml}</div>
+                        </div>`;
+                    }
+                    return content.join('\n');
+                  })()}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        `;
+
+        reportContent.innerHTML = content;
+        loadComments();
+      } catch (error) {
+        console.error('Error loading report details:', error);
+        document.getElementById('reportContent').innerHTML = '<div class="error-message">Error loading report</div>';
+      }
+    }
+
+    async function loadComments() {
+      try {
+        const response = await fetch(`/api/topics/${currentReportId}/comments`);
+        const comments = await response.json();
+
+        // Create a map of comments for easy lookup
+        const commentMap = comments.reduce((map, comment) => {
+          map[comment.id] = comment;
+          return map;
+        }, {});
+
+        const commentsSection = document.getElementById('commentsSection');
+        commentsSection.innerHTML = comments.map(comment => {
+          let content = comment.content;
+          let quotedContent = '';
+
+          // Parse quoted content from the comment text
+          if (comment.quotedCommentId) {
+            const quotedComment = commentMap[comment.quotedCommentId];
+            if (quotedComment) {
+              quotedContent = `
+                <div class="quote-content">
+                  <strong>${quotedComment.author}:</strong>
+                  ${quotedComment.content.split('\n\n')[1] || quotedComment.content}
+                </div>
+              `;
+              // Remove the quoted text from the main content if it exists
+              content = content.split('\n\n').slice(1).join('\n\n') || content;
+            }
+          }
+
+          return `
+            <div class="comment" id="comment-${comment.id}">
+              <div class="comment-header">
+                <div class="author-info">
+                  <img class="author-avatar thread-avatar" src="${comment.authorPhotoUrl || '/images/default-avatar.png'}" alt="${comment.author}'s avatar" onerror="this.src='/images/default-avatar.png'">
+                  <div>
+                    <div class="author-name">${formatUsername(comment.author, comment.rank || 'Verified')}</div>
+                    <div class="author-role">${comment.rank || 'Verified'}</div>
+                  </div>
+                </div>
+                <div class="comment-date">${new Date(comment.createdAt).toLocaleString()}</div>
+              </div>
+              <div class="comment-content">
+                ${quotedContent}
+                ${content}
+              </div>
+              <button class="quote-btn" onclick="quoteComment('${comment.id}', '${comment.author}', '${content.replace(/['\\]/g, '\\$&')}')">Quote</button>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error loading comments:', error);
+      }
+    }
+
+    function quoteComment(commentId, author, content) {
+      currentQuoteId = commentId;
+      const replyBox = document.getElementById('replyContent');
+      replyBox.value = `>${author}: ${content}\n\n`;
+      replyBox.focus();
+    }
+
+    async function submitReply() {
+      if (isLocked) {
+        alert('This thread is locked. You cannot add new comments.');
+        return;
+      }
+      const content = document.getElementById('replyContent').value;
+      if (!content.trim()) return;
+
+      try {
+        const response = await fetch(`/api/topics/${currentReportId}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            content,
+            quotedCommentId: currentQuoteId
+          })
+        });
+
+        if (response.ok) {
+          document.getElementById('replyContent').value = '';
+          currentQuoteId = null;
+          loadComments();
+        } else {
+          alert('Failed to submit reply');
+        }
+      } catch (error) {
+        console.error('Error submitting reply:', error);
+        alert('Error submitting reply');
+      }
+    }
+
+    function toggleNavDropdown() {
+      const dropdown = document.getElementById('navDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    async function changeReportStatus(newStatus) {
+      try {
+        const response = await fetch(`/api/topics/${currentReportId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            status: newStatus,
+            previousStatus: currentTopic.status
+          })
+        });
+
+        if (response.ok) {
+          alert(`Report status changed to ${newStatus}`);
+          window.location.href = newStatus === 'archived' ? 'archived_reports.html' : 'handle_reports.html';
+        } else {
+          alert('Failed to change report status');
+        }
+      } catch (error) {
+        console.error('Error changing report status:', error);
+        alert('Error changing report status');
+      }
+    }
+
+    async function toggleLock() {
+      isLocked = !isLocked;
+      try {
+        const response = await fetch(`/api/topics/${currentReportId}/toggle-lock`, {
+          method: 'POST',
+        });
+        if (response.ok) {
+          updateLockButton();
+          alert(`Topic ${isLocked ? 'locked' : 'unlocked'}`);
+        } else {
+          alert('Failed to update lock status');
+          isLocked = !isLocked; //Revert if failed
+          updateLockButton();
+        }
+      } catch (error) {
+        console.error('Error toggling lock:', error);
+        alert('Error toggling lock');
+        isLocked = !isLocked; //Revert if failed
+        updateLockButton();
+      }
+    }
+
+    function toggleEvidence(button) {
+      const content = button.nextElementSibling;
+      content.classList.toggle('revealed');
+      button.textContent = content.classList.contains('revealed') ? 'Hide contents' : 'Reveal hidden contents';
+    }
+
+    function updateLockButton() {
+      const lockButton = document.getElementById('lockButton');
+      lockButton.textContent = isLocked ? 'Unlock Topic' : 'Lock Topic';
+
+      // Update reply form visibility and text
+      const replyForm = document.getElementById('replyForm');
+      const replyContent = document.getElementById('replyContent');
+      const lockedMessage = document.getElementById('lockedMessage');
+      const isAdmin = document.querySelector('.status-buttons').style.display === 'block';
+
+      if (isLocked && !isAdmin) {
+        replyContent.value = 'This Topic is Locked';
+        replyContent.readOnly = true;
+        replyContent.style.backgroundColor = '#f0f0f0';
+        replyContent.style.color = '#666';
+        replyForm.querySelector('button').disabled = true;
+        lockedMessage.style.display = 'block';
+      } else {
+        replyContent.value = '';
+        replyContent.readOnly = false;
+        replyContent.style.backgroundColor = '#1a1a1a';
+        replyContent.style.color = '#fff';
+        replyContent.placeholder = 'Write your reply...';
+        replyForm.querySelector('button').disabled = false;
+        lockedMessage.style.display = 'none';
+      }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', loadReportDetails);
+  </script>
+</body>
+</html>

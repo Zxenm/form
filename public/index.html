@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="animations.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AltherPride SAMP Forum</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="images/alther.png" alt="AltherPride Logo">
+      <span>AltherPride</span>
+    </div>
+    <div class="user-nav">
+      <div class="user-info-container">
+        <img id="userPhoto" class="nav-user-photo" src="/images/default-avatar.png" alt="User Photo">
+        <div id="userInfo" class="user-info"></div>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-toggle" onclick="toggleNavDropdown()">☰</button>
+        <div class="nav-dropdown hidden" id="navDropdown">
+          <a href="#" class="nav-link" onclick="showMainPage()">Home Page</a>
+          <a href="profile.html" class="nav-link">My Profile</a>
+          <a href="#" class="nav-link" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="loginSection">
+      <div class="form-container" id="whatsappForm">
+        <h2>Register Account</h2>
+        <form onsubmit="registerWhatsApp(event)">
+          <input type="tel" id="whatsapp" placeholder="WhatsApp Number" required>
+          <button type="submit">Register</button>
+        </form>
+        <p class="form-switch">Already have an account? <a href="#" onclick="toggleForms()">Login</a></p>
+      </div>
+
+      <div class="form-container hidden" id="loginForm">
+        <h2>Login</h2>
+        <form onsubmit="login(event)">
+          <input type="text" id="loginUsername" placeholder="Username" required>
+          <div class="password-container">
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)"><img src="images/open_eye.png" alt="Show"></button>
+          </div>
+          <button type="submit">Login</button>
+        </form>
+        <p class="form-switch">Don't have an account? <a href="#" onclick="toggleForms()">Register</a></p>
+      </div>
+
+      <div class="form-container hidden" id="profileForm">
+        <h2>Complete Your Profile</h2>
+        <form onsubmit="completeProfile(event)">
+          <input type="text" id="username" placeholder="Username" required>
+          <div class="password-container">
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="button" class="password-toggle" onclick="togglePassword('password', this)"><img src="images/open_eye.png" alt="Show"></button>
+          </div>
+          <button type="submit">Create Account</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="join-text"><a href="https://discord.gg/fcQwMekMmt" target="_blank">Join to our Servers</a></div>
+
+    <div id="forumSection" class="hidden">
+      <div class="samp-logo">
+        <img src="images/banner1.png" alt="AltherPride SAMP Logo">
+      </div>
+      <div class="forum-category">
+        <h2>Server Information</h2>
+        <div class="forum-threads">
+          <div class="thread" onclick="openNewWindow('Server Rules', 'rules.html')">
+            <h3>Server Rules</h3>
+            <p>Important rules and guidelines for all players</p>
+          </div>
+          <div class="thread" onclick="openNewWindow('Server Features', 'features.html')">
+            <h3>Server Features</h3>
+            <p>List of available features and systems</p>
+          </div>
+          <div class="thread" onclick="openNewWindow('Server Status', 'status.html')">
+            <h3>Server Status</h3>
+            <p>Current server status and maintenance updates</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="forum-category">
+        <h2>Player Support</h2>
+        <div class="forum-threads">
+          <div class="thread" onclick="openNewWindow('Player Reports', 'reports.html')">
+            <div class="thread-icon">🚫</div>
+            <div class="thread-content">
+              <h3>Player Reports</h3>
+              <p>Report players breaking rules</p>
+            </div>
+            <div class="thread-stats">
+              <div class="post-count">245</div>
+              <div>posts</div>
+            </div>
+          </div>
+          <div class="thread" onclick="openNewWindow('Asset Refund', 'refund.html')">
+            <div class="thread-icon">💰</div>
+            <div class="thread-content">
+              <h3>Asset Refund</h3>
+              <p>Request refunds for lost items</p>
+            </div>
+            <div class="thread-stats">
+              <div class="post-count">128</div>
+              <div>posts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/script.js"></script>
+</body>
+</html>
