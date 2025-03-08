@@ -1,0 +1,48 @@
+{
+  "ranks": [
+    {
+      "name": "Verified",
+      "level": 0
+    },
+    {
+      "name": "Server Donater",
+      "level": 1
+    },
+    {
+      "name": "Prob Helper",
+      "level": 2
+    },
+    {
+      "name": "Junior Helper", 
+      "level": 3
+    },
+    {
+      "name": "Server Helper",
+      "level": 4
+    },
+    {
+      "name": "Prob Admin",
+      "level": 5
+    },
+    {
+      "name": "Junior Admin",
+      "level": 6
+    },
+    {
+      "name": "Senior Admin",
+      "level": 7
+    },
+    {
+      "name": "Head Admin",
+      "level": 8
+    },
+    {
+      "name": "Server Management",
+      "level": 9
+    },
+    {
+      "name": "Executive Admin",
+      "level": 10
+    }
+  ]
+}

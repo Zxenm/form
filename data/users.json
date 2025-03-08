@@ -1,0 +1,27 @@
+{
+  "088233076089": {
+    "verified": true,
+    "username": "Severly",
+    "password": "p",
+    "role": "admin",
+    "rank": "Executive Admin",
+    "permissions": [
+      "manage_users",
+      "manage_roles",
+      "manage_ranks",
+      "delete_users"
+    ],
+    "photoUrl": "/uploads/088233076089_1740225246729.png"
+  },
+  "088233076088": {
+    "verified": true,
+    "username": "admin",
+    "password": "admin",
+    "role": "admin",
+    "rank": "Server Management",
+    "permissions": [
+      "manage_users",
+      "manage_roles"
+    ]
+  }
+}
